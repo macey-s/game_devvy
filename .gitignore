@@ -1,0 +1,88 @@
+####################################
+# OS / Editor junk
+####################################
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+.vscode/
+.idea/
+*.swp
+*.tmp
+*.log
+
+####################################
+# Unity (DO NOT COMMIT)
+####################################
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Mm]emoryCaptures/
+
+# Visual Studio / Rider
+.vs/
+*.csproj
+*.unityproj
+*.sln
+*.user
+*.pidb
+*.booproj
+
+# Unity crash reports
+sysinfo.txt
+
+####################################
+# Maya
+####################################
+autosave/
+*.mb.autosave
+*.ma.autosave
+mayaCrashLog*
+*.bak
+*.swatches
+
+####################################
+# Houdini Apprentice
+####################################
+# Temp & cache
+.houdini/
+.houdini_temp/
+houdini_temp/
+houdini_cache/
+
+# Simulation / render cache
+*.sim
+*.bgeo
+*.bgeo.sc
+*.vdb
+*.ifd
+*.exr
+*.rat
+*.pic
+
+####################################
+# General 3D junk
+####################################
+*.fbm/
+*.cache/
+
+####################################
+# Builds & exports (optional)
+####################################
+*.exe
+*.apk
+*.aab
+*.app
+*.dmg
+*.zip
+*.rar
+
+####################################
+# Backups
+####################################
+*~
+*.backup
+*.old
