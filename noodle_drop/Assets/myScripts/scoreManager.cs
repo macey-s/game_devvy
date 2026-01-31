@@ -1,25 +1,32 @@
 using UnityEngine;
-using UnityEngine.UI;
+using TMPro;
 
 public class scoreManager : MonoBehaviour
 {
-    public Text scoreText; // Drag your UI Text here
+    [Header("UI")]
+    public TMP_Text scoreText; // Drag your TextMeshProUGUI element here
+
     private int score = 0;
 
+    // Call this to add a point
     public void AddPoint()
     {
         score++;
         UpdateUI();
     }
 
+    // Call this to reset the score
     public void ResetScore()
     {
         score = 0;
         UpdateUI();
     }
 
-    void UpdateUI()
+    private void UpdateUI()
     {
-        scoreText.text = "Score: " + score;
+        if (scoreText != null)
+        {
+            scoreText.text = " " + score;
+        }
     }
 }

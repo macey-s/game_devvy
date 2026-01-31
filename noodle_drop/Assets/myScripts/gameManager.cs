@@ -1,18 +1,16 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class gameManager : MonoBehaviour
 {
     [Header("References")]
     public chopstickMovement chopsticks;
     public Transform noodle;
-    public Transform bowl; // Where noodle lands on success
+    public Transform bowl;
+    public scoreManager scoreManager; // Score system
 
-    [Header("Tuning")]
-    public float noodleWidth = 0.5f;
-    public float dropSpeed = 5f;        // Speed noodle falls
-    public float gapDecrease = 0.1f;    // How much the chopsticks gap shrinks per success
-    public float speedIncrease = 0.2f;  // How much chopstick speed increases per success
-    public float failWaitTime = 1f;     // Time to pause noodle on chopsticks for fail
+    [Header("Data")]
+    public gameDataSO gameData; // ScriptableObject with tuning values
 
     private bool hasTapped = false;
     private bool dropping = false;
@@ -23,6 +21,11 @@ public class gameManager : MonoBehaviour
     void Start()
     {
         noodleStartPos = noodle.position;
+
+        // Initialize chopsticks to starting values from SO
+        chopsticks.gapSize = gameData.startGapSize;
+        chopsticks.speed = gameData.startSpeed;
+        chopsticks.UpdateGap();
     }
 
     void Update()
@@ -40,21 +43,21 @@ public class gameManager : MonoBehaviour
         if (dropping)
         {
             // Move noodle towards target (bowl or chopsticks)
-            noodle.position = Vector3.MoveTowards(noodle.position, targetPosition, dropSpeed * Time.deltaTime);
+            noodle.position = Vector3.MoveTowards(noodle.position, targetPosition, gameData.dropSpeed * Time.deltaTime);
 
             // Check if noodle reached target
-            if (Vector3.Distance(noodle.position, targetPosition) < 0.01f)
+            if (Vector3.Distance(noodle.position, targetPosition) < 1.5f)
             {
                 dropping = false;
 
                 if (lastDropSuccess)
                 {
-                    ResetRound();
+                    ResetRound(true);
                 }
                 else
                 {
                     // Fail: wait a moment, then reset
-                    Invoke(nameof(ResetRound), failWaitTime);
+                    Invoke(nameof(ResetAfterFail), gameData.failWaitTime);
                 }
             }
         }
@@ -66,7 +69,7 @@ public class gameManager : MonoBehaviour
         float chopstickX = chopsticks.transform.position.x;
 
         float halfGap = chopsticks.gapSize / 2f;
-        float halfNoodle = noodleWidth / 2f;
+        float halfNoodle = gameData.noodleWidth / 2f;
 
         bool fits =
             noodleX - halfNoodle > chopstickX - halfGap &&
@@ -78,29 +81,42 @@ public class gameManager : MonoBehaviour
         {
             Debug.Log("SUCCESS!");
             targetPosition = bowl.position;
+            scoreManager.AddPoint();
         }
         else
         {
             Debug.Log("FAIL!");
-            // Drop to just above chopsticks
-            targetPosition = new Vector3(noodle.position.x, chopsticks.transform.position.y + 1.5f, noodle.position.z);
+            targetPosition = new Vector3(noodle.position.x, chopsticks.transform.position.y + 0.1f, noodle.position.z);
+            scoreManager.ResetScore();
         }
 
         dropping = true;
     }
 
-    void ResetRound()
+    void ResetRound(bool wasSuccess)
     {
-        // Increase difficulty for next round
-        chopsticks.gapSize = Mathf.Max(0.3f, chopsticks.gapSize - gapDecrease); // minimum gap
-        chopsticks.speed += speedIncrease;
+        if (wasSuccess)
+        {
+            // Success: increase difficulty
+            chopsticks.gapSize = Mathf.Max(0.3f, chopsticks.gapSize - gameData.gapDecrease);
+            chopsticks.speed += gameData.speedIncrease;
+        }
+        else
+        {
+            // Fail: reset to starting values
+            chopsticks.gapSize = gameData.startGapSize;
+            chopsticks.speed = gameData.startSpeed;
+        }
 
-        // Reset noodle position
         noodle.position = noodleStartPos;
-
-        // Reset input and resume chopsticks
         hasTapped = false;
-        chopsticks.UpdateGap(); // in case your ChopsticksMover adjusts visuals
+        chopsticks.UpdateGap();
         chopsticks.ResumeMovement();
+    }
+
+    // Wrapper for Invoke to avoid syntax issues
+    void ResetAfterFail()
+    {
+        ResetRound(false);
     }
 }
