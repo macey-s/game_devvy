@@ -17,5 +17,5 @@ MonoBehaviour:
   gapDecrease: 0.1
   speedIncrease: 0.2
   dropSpeed: 10
-  failWaitTime: 1
+  failWaitTime: 1.5
   noodleWidth: 19.6
