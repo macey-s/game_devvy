@@ -8,6 +8,7 @@ public class gameDataSO : ScriptableObject
     public float startSpeed = 2.0f;
     public float gapDecrease = 0.1f;
     public float speedIncrease = 0.2f;
+    public float maxSpeed = 5.0f;
 
     [Header("Noodle Settings")]
     public float dropSpeed = 5f;

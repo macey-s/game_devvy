@@ -1,22 +1,25 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 public class gameManager : MonoBehaviour
 {
+    public enum GameState { Aiming, Dropping, FailPause }
+
     [Header("References")]
     public chopstickMovement chopsticks;
     public Transform noodle;
     public Transform bowl;
-    public scoreManager scoreManager; // Score system
+    public scoreManager scoreManager;
 
     [Header("Data")]
-    public gameDataSO gameData; // ScriptableObject with tuning values
+    public gameDataSO gameData;
 
-    private bool hasTapped = false;
-    private bool dropping = false;
+    [Header("State (Debug)")]
+    [SerializeField] private GameState state = GameState.Aiming;
+
     private Vector3 noodleStartPos;
     private Vector3 targetPosition;
     private bool lastDropSuccess;
+    private float failTimer;
 
     void Start()
     {
@@ -26,41 +29,71 @@ public class gameManager : MonoBehaviour
         chopsticks.gapSize = gameData.startGapSize;
         chopsticks.speed = gameData.startSpeed;
         chopsticks.UpdateGap();
+        chopsticks.ResumeMovement();
+
+        state = GameState.Aiming;
     }
 
     void Update()
     {
-        if (!hasTapped)
+        switch (state)
         {
-            if (Input.GetMouseButtonDown(0) || Input.touchCount > 0)
+            case GameState.Aiming:
+                HandleInput();
+                break;
+
+            case GameState.Dropping:
+                HandleDropMovement();
+                break;
+
+            case GameState.FailPause:
+                HandleFailPause();
+                break;
+        }
+    }
+
+    void HandleInput()
+    {
+        bool tappedMouse = Input.GetMouseButtonDown(0);
+        bool tappedTouch = (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began);
+
+        if (!tappedMouse && !tappedTouch) return;
+
+        chopsticks.StopMovement();
+        CheckResult();              // sets target + score + lastDropSuccess
+        state = GameState.Dropping; // lock input until drop finishes
+    }
+
+    void HandleDropMovement()
+    {
+        noodle.position = Vector3.MoveTowards(
+            noodle.position,
+            targetPosition,
+            gameData.dropSpeed * Time.deltaTime
+        );
+
+        if (Vector3.Distance(noodle.position, targetPosition) < 1.5f)
+        {
+            if (lastDropSuccess)
             {
-                hasTapped = true;
-                chopsticks.StopMovement();
-                CheckResult();
+                ResetRound(true);
+                state = GameState.Aiming;
+            }
+            else
+            {
+                failTimer = gameData.failWaitTime;
+                state = GameState.FailPause;
             }
         }
+    }
 
-        if (dropping)
-        {
-            // Move noodle towards target (bowl or chopsticks)
-            noodle.position = Vector3.MoveTowards(noodle.position, targetPosition, gameData.dropSpeed * Time.deltaTime);
+    void HandleFailPause()
+    {
+        failTimer -= Time.deltaTime;
+        if (failTimer > 0f) return;
 
-            // Check if noodle reached target
-            if (Vector3.Distance(noodle.position, targetPosition) < 1.5f)
-            {
-                dropping = false;
-
-                if (lastDropSuccess)
-                {
-                    ResetRound(true);
-                }
-                else
-                {
-                    // Fail: wait a moment, then reset
-                    Invoke(nameof(ResetAfterFail), gameData.failWaitTime);
-                }
-            }
-        }
+        ResetRound(false);
+        state = GameState.Aiming;
     }
 
     void CheckResult()
@@ -79,27 +112,30 @@ public class gameManager : MonoBehaviour
 
         if (fits)
         {
-            Debug.Log("SUCCESS!");
             targetPosition = bowl.position;
             scoreManager.AddPoint();
         }
         else
         {
-            Debug.Log("FAIL!");
-            targetPosition = new Vector3(noodle.position.x, chopsticks.transform.position.y + 0.1f, noodle.position.z);
+            targetPosition = new Vector3(
+                noodle.position.x,
+                chopsticks.transform.position.y + 0.1f,
+                noodle.position.z
+            );
             scoreManager.ResetScore();
         }
-
-        dropping = true;
     }
 
     void ResetRound(bool wasSuccess)
     {
         if (wasSuccess)
         {
-            // Success: increase difficulty
+            // Success: increase difficulty (with clamps for stability)
             chopsticks.gapSize = Mathf.Max(0.3f, chopsticks.gapSize - gameData.gapDecrease);
-            chopsticks.speed += gameData.speedIncrease;
+
+            // Add maxSpeed to your gameDataSO for this clamp:
+            // public float maxSpeed = 8f;
+            chopsticks.speed = Mathf.Min(gameData.maxSpeed, chopsticks.speed + gameData.speedIncrease);
         }
         else
         {
@@ -109,14 +145,7 @@ public class gameManager : MonoBehaviour
         }
 
         noodle.position = noodleStartPos;
-        hasTapped = false;
         chopsticks.UpdateGap();
         chopsticks.ResumeMovement();
-    }
-
-    // Wrapper for Invoke to avoid syntax issues
-    void ResetAfterFail()
-    {
-        ResetRound(false);
     }
 }
