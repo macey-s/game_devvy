@@ -10,12 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 00d4c03838facd54a9b5f8ba71dc33df, type: 3}
-  m_Name: GameData_Default
+  m_Name: gameDataSO
   m_EditorClassIdentifier: Assembly-CSharp::gameDataSO
   startGapSize: 22
-  startSpeed: 2
+  startSpeed: 3
   gapDecrease: 0.1
   speedIncrease: 0.2
-  dropSpeed: 10
-  failWaitTime: 1.5
+  maxSpeed: 15
+  dropSpeed: 9
+  failWaitTime: 1
   noodleWidth: 19.6

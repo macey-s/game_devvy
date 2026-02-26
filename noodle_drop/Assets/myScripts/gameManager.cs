@@ -13,6 +13,9 @@ public class gameManager : MonoBehaviour
     [Header("Data")]
     public gameDataSO gameData;
 
+    [Header("Events")]
+    public gameEvents events;
+
     [Header("State (Debug)")]
     [SerializeField] private GameState state = GameState.Aiming;
 
@@ -23,15 +26,23 @@ public class gameManager : MonoBehaviour
 
     void Start()
     {
+        // Stability validation checks
+        Debug.Assert(chopsticks != null, "Chopsticks reference missing!");
+        Debug.Assert(noodle != null, "Noodle reference missing!");
+        Debug.Assert(bowl != null, "Bowl reference missing!");
+        Debug.Assert(gameData != null, "GameData SO missing!");
+        Debug.Assert(events != null, "GameEvents reference missing!");
+
         noodleStartPos = noodle.position;
 
-        // Initialize chopsticks to starting values from SO
         chopsticks.gapSize = gameData.startGapSize;
         chopsticks.speed = gameData.startSpeed;
         chopsticks.UpdateGap();
         chopsticks.ResumeMovement();
 
         state = GameState.Aiming;
+
+        events.RaiseRoundStart();
     }
 
     void Update()
@@ -59,9 +70,11 @@ public class gameManager : MonoBehaviour
 
         if (!tappedMouse && !tappedTouch) return;
 
+        events.RaiseTap();
+
         chopsticks.StopMovement();
-        CheckResult();              // sets target + score + lastDropSuccess
-        state = GameState.Dropping; // lock input until drop finishes
+        CheckResult();
+        state = GameState.Dropping;
     }
 
     void HandleDropMovement()
@@ -113,7 +126,10 @@ public class gameManager : MonoBehaviour
         if (fits)
         {
             targetPosition = bowl.position;
+
             scoreManager.AddPoint();
+
+            events.RaiseSuccess();
         }
         else
         {
@@ -122,7 +138,10 @@ public class gameManager : MonoBehaviour
                 chopsticks.transform.position.y + 0.1f,
                 noodle.position.z
             );
+
             scoreManager.ResetScore();
+
+            events.RaiseFail();
         }
     }
 
@@ -130,22 +149,23 @@ public class gameManager : MonoBehaviour
     {
         if (wasSuccess)
         {
-            // Success: increase difficulty (with clamps for stability)
             chopsticks.gapSize = Mathf.Max(0.3f, chopsticks.gapSize - gameData.gapDecrease);
-
-            // Add maxSpeed to your gameDataSO for this clamp:
-            // public float maxSpeed = 8f;
             chopsticks.speed = Mathf.Min(gameData.maxSpeed, chopsticks.speed + gameData.speedIncrease);
         }
         else
         {
-            // Fail: reset to starting values
             chopsticks.gapSize = gameData.startGapSize;
             chopsticks.speed = gameData.startSpeed;
         }
 
         noodle.position = noodleStartPos;
+
         chopsticks.UpdateGap();
         chopsticks.ResumeMovement();
+
+        events.RaiseReset();
+
+        if (wasSuccess) events.RaiseResetAfterSuccess();
+        else events.RaiseResetAfterFail();
     }
 }
