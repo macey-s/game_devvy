@@ -7,7 +7,7 @@ public class chopstickMovement : MonoBehaviour
 
     public Transform leftStick;
     public Transform rightStick;
-    public float gapSize = 1.5f;
+    public float gapSize = 11f;
 
     private Vector3 startPos;
     private bool isMoving = true;
@@ -20,6 +20,8 @@ public class chopstickMovement : MonoBehaviour
 
     void Update()
     {
+        Debug.Log("Gap: " + Vector3.Distance(leftStick.position, rightStick.position));
+
         UpdateGap();
 
         if (!isMoving) return;
