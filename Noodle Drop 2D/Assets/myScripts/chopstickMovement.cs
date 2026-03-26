@@ -20,7 +20,6 @@ public class chopstickMovement : MonoBehaviour
 
     void Update()
     {
-        Debug.Log("Gap: " + Vector3.Distance(leftStick.position, rightStick.position));
 
         UpdateGap();
 

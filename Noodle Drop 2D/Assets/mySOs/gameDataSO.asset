@@ -12,11 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 00d4c03838facd54a9b5f8ba71dc33df, type: 3}
   m_Name: gameDataSO
   m_EditorClassIdentifier: Assembly-CSharp::gameDataSO
-  startGapSize: 11
-  startSpeed: 2.5
+  startGapSize: 12
+  startSpeed: 2.3
   gapDecrease: 0.1
   speedIncrease: 0.2
   maxSpeed: 15
   dropSpeed: 9
   failWaitTime: 1
-  noodleWidth: 1
+  noodleWidth: 9.3
