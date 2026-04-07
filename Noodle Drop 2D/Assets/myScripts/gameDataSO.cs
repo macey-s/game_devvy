@@ -9,9 +9,14 @@ public class gameDataSO : ScriptableObject
     public float gapDecrease = 0.1f;
     public float speedIncrease = 0.2f;
     public float maxSpeed = 5.0f;
+    public float minGapSize = 0.5f;
+
+    [Tooltip("Number of consecutive successes before the gap shrinks")]
+    public int gapShrinkStreak = 3;
 
     [Header("Noodle Settings")]
     public float dropSpeed = 5f;
     public float failWaitTime = 1f;
+    public float successWaitTime = 0.75f;
     public float noodleWidth = 0.5f;
 }

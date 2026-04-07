@@ -1,9 +1,7 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class gameManager : MonoBehaviour
 {
-    public enum GameState { Aiming, Dropping, FailPause }
-
     [Header("References")]
     public chopstickMovement chopsticks;
     public Transform noodle;
@@ -23,10 +21,13 @@ public class gameManager : MonoBehaviour
     private Vector3 targetPosition;
     private bool lastDropSuccess;
     private float failTimer;
+    private int successStreak = 0;
+
+    public enum GameState { Aiming, Dropping, FailPause }
 
     void Start()
     {
-        // Stability validation checks
+        // Validate references
         Debug.Assert(chopsticks != null, "Chopsticks reference missing!");
         Debug.Assert(noodle != null, "Noodle reference missing!");
         Debug.Assert(bowl != null, "Bowl reference missing!");
@@ -35,6 +36,7 @@ public class gameManager : MonoBehaviour
 
         noodleStartPos = noodle.position;
 
+        // Initialize chopsticks
         chopsticks.gapSize = gameData.startGapSize;
         chopsticks.speed = gameData.startSpeed;
         chopsticks.UpdateGap();
@@ -66,14 +68,14 @@ public class gameManager : MonoBehaviour
     void HandleInput()
     {
         bool tappedMouse = Input.GetMouseButtonDown(0);
-        bool tappedTouch = (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began);
+        bool tappedTouch = Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began;
 
         if (!tappedMouse && !tappedTouch) return;
 
         events.RaiseTap();
 
         chopsticks.StopMovement();
-        CheckResult();
+        targetPosition = bowl.position;
         state = GameState.Dropping;
     }
 
@@ -84,20 +86,6 @@ public class gameManager : MonoBehaviour
             targetPosition,
             gameData.dropSpeed * Time.deltaTime
         );
-
-        if (Vector3.Distance(noodle.position, targetPosition) < 1.5f)
-        {
-            if (lastDropSuccess)
-            {
-                ResetRound(true);
-                state = GameState.Aiming;
-            }
-            else
-            {
-                failTimer = gameData.failWaitTime;
-                state = GameState.FailPause;
-            }
-        }
     }
 
     void HandleFailPause()
@@ -105,66 +93,70 @@ public class gameManager : MonoBehaviour
         failTimer -= Time.deltaTime;
         if (failTimer > 0f) return;
 
-        ResetRound(false);
+        ResetRound(lastDropSuccess);
         state = GameState.Aiming;
     }
 
-    void CheckResult()
+    // Called by noodleCollision script on collision
+    public void OnNoodleSuccess()
     {
-        float noodleX = noodle.position.x;
-        float chopstickX = chopsticks.transform.position.x;
+        lastDropSuccess = true;
 
-        float halfGap = chopsticks.gapSize / 2f;
-        float halfNoodle = gameData.noodleWidth / 2f;
+        failTimer = gameData.successWaitTime;
+        state = GameState.FailPause;
 
-        bool fits =
-            noodleX - halfNoodle > chopstickX - halfGap &&
-            noodleX + halfNoodle < chopstickX + halfGap;
+        scoreManager.AddPoint();
+        events.RaiseSuccess();
+    }
 
-        lastDropSuccess = fits;
+    public void OnNoodleFail()
+    {
+        lastDropSuccess = false;
 
-        if (fits)
-        {
-            targetPosition = bowl.position;
+        failTimer = gameData.failWaitTime;
+        state = GameState.FailPause;
 
-            scoreManager.AddPoint();
-
-            events.RaiseSuccess();
-        }
-        else
-        {
-            targetPosition = new Vector3(
-                noodle.position.x,
-                chopsticks.transform.position.y + 0.1f,
-                noodle.position.z
-            );
-
-            scoreManager.ResetScore();
-
-            events.RaiseFail();
-        }
+        scoreManager.ResetScore();
+        events.RaiseFail();
     }
 
     void ResetRound(bool wasSuccess)
     {
         if (wasSuccess)
         {
-            chopsticks.gapSize = Mathf.Max(0.3f, chopsticks.gapSize - gameData.gapDecrease);
+            // Increase streak and shrink gap if threshold reached
+            successStreak++;
+            if (successStreak >= gameData.gapShrinkStreak)
+            {
+                chopsticks.gapSize = Mathf.Max(gameData.minGapSize, chopsticks.gapSize - gameData.gapDecrease);
+                chopsticks.UpdateGapSizeOnly(); // update width without moving sticks
+                successStreak = 0;
+            }
+
+            // Speed increases every success
             chopsticks.speed = Mathf.Min(gameData.maxSpeed, chopsticks.speed + gameData.speedIncrease);
         }
         else
         {
+            // Reset streak on failure
+            successStreak = 0;
+
             chopsticks.gapSize = gameData.startGapSize;
             chopsticks.speed = gameData.startSpeed;
+
+            // Jump sticks to new location after fail
+            chopsticks.UpdateGap();
         }
 
+        // Reset noodle
         noodle.position = noodleStartPos;
+        noodle.GetComponent<noodleCollision>().ResetCollision();
 
-        chopsticks.UpdateGap();
+        // Resume chopsticks movement
         chopsticks.ResumeMovement();
 
+        // Fire events
         events.RaiseReset();
-
         if (wasSuccess) events.RaiseResetAfterSuccess();
         else events.RaiseResetAfterFail();
     }
