@@ -3,7 +3,7 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "GameData", menuName = "UberCasual/GameData")]
 public class gameDataSO : ScriptableObject
 {
-    [Header("Chopsticks Settings")]
+    [Header("chopsticks settings")]
     public float startGapSize = 1.0f;
     public float startSpeed = 2.0f;
     public float gapDecrease = 0.1f;
@@ -11,10 +11,10 @@ public class gameDataSO : ScriptableObject
     public float maxSpeed = 5.0f;
     public float minGapSize = 0.5f;
 
-    [Tooltip("Number of consecutive successes before the gap shrinks")]
+    [Tooltip("successes before gap shrinks")]
     public int gapShrinkStreak = 3;
 
-    [Header("Noodle Settings")]
+    [Header("noodle settings")]
     public float dropSpeed = 5f;
     public float failWaitTime = 1f;
     public float successWaitTime = 0.75f;
