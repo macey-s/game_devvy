@@ -6,6 +6,7 @@ public class noodleCollision : MonoBehaviour
 
     private bool hasResolved = false;
 
+    // if noodle collides with bowl or sticks //
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (hasResolved) return;
@@ -22,6 +23,7 @@ public class noodleCollision : MonoBehaviour
         }
     }
 
+    // reset //
     public void ResetCollision()
     {
         hasResolved = false;

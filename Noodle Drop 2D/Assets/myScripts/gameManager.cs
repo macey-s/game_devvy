@@ -2,19 +2,19 @@
 
 public class gameManager : MonoBehaviour
 {
-    [Header("References")]
+    [Header("references")]
     public chopstickMovement chopsticks;
     public Transform noodle;
     public Transform bowl;
     public scoreManager scoreManager;
 
-    [Header("Data")]
+    [Header("data")]
     public gameDataSO gameData;
 
-    [Header("Events")]
+    [Header("events")]
     public gameEvents events;
 
-    [Header("State (Debug)")]
+    [Header("state (Debug)")]
     [SerializeField] private GameState state = GameState.Aiming;
 
     private Vector3 noodleStartPos;
@@ -27,16 +27,16 @@ public class gameManager : MonoBehaviour
 
     void Start()
     {
-        // Validate references
-        Debug.Assert(chopsticks != null, "Chopsticks reference missing!");
-        Debug.Assert(noodle != null, "Noodle reference missing!");
-        Debug.Assert(bowl != null, "Bowl reference missing!");
-        Debug.Assert(gameData != null, "GameData SO missing!");
-        Debug.Assert(events != null, "GameEvents reference missing!");
+        // validate references //
+        Debug.Assert(chopsticks != null, "reference missing");
+        Debug.Assert(noodle != null, "reference missing");
+        Debug.Assert(bowl != null, "reference missing");
+        Debug.Assert(gameData != null, "reference missing");
+        Debug.Assert(events != null, "reference missing");
 
         noodleStartPos = noodle.position;
 
-        // Initialize chopsticks
+        // set chopsticks //
         chopsticks.gapSize = gameData.startGapSize;
         chopsticks.speed = gameData.startSpeed;
         chopsticks.UpdateGap();
@@ -65,6 +65,7 @@ public class gameManager : MonoBehaviour
         }
     }
 
+    // handle player input //
     void HandleInput()
     {
         bool tappedMouse = Input.GetMouseButtonDown(0);
@@ -79,6 +80,7 @@ public class gameManager : MonoBehaviour
         state = GameState.Dropping;
     }
 
+    // handle dropping //
     void HandleDropMovement()
     {
         noodle.position = Vector3.MoveTowards(
@@ -88,6 +90,7 @@ public class gameManager : MonoBehaviour
         );
     }
 
+    // handle the failiure pause //
     void HandleFailPause()
     {
         failTimer -= Time.deltaTime;
@@ -97,7 +100,7 @@ public class gameManager : MonoBehaviour
         state = GameState.Aiming;
     }
 
-    // Called by noodleCollision script on collision
+    // handle the success shift //
     public void OnNoodleSuccess()
     {
         lastDropSuccess = true;
@@ -109,6 +112,7 @@ public class gameManager : MonoBehaviour
         events.RaiseSuccess();
     }
 
+    // handle the reset after fail //
     public void OnNoodleFail()
     {
         lastDropSuccess = false;
@@ -124,38 +128,36 @@ public class gameManager : MonoBehaviour
     {
         if (wasSuccess)
         {
-            // Increase streak and shrink gap if threshold reached
+            // increase difficulty //
             successStreak++;
             if (successStreak >= gameData.gapShrinkStreak)
             {
                 chopsticks.gapSize = Mathf.Max(gameData.minGapSize, chopsticks.gapSize - gameData.gapDecrease);
-                chopsticks.UpdateGapSizeOnly(); // update width without moving sticks
+                chopsticks.UpdateGapSizeOnly();
                 successStreak = 0;
             }
-
-            // Speed increases every success
+            
             chopsticks.speed = Mathf.Min(gameData.maxSpeed, chopsticks.speed + gameData.speedIncrease);
         }
         else
         {
-            // Reset streak on failure
+            // reset the streak when fail //
             successStreak = 0;
 
             chopsticks.gapSize = gameData.startGapSize;
             chopsticks.speed = gameData.startSpeed;
 
-            // Jump sticks to new location after fail
             chopsticks.UpdateGap();
         }
 
-        // Reset noodle
+        // reset noodle //
         noodle.position = noodleStartPos;
         noodle.GetComponent<noodleCollision>().ResetCollision();
 
-        // Resume chopsticks movement
+        // resume movement //
         chopsticks.ResumeMovement();
 
-        // Fire events
+        // set events //
         events.RaiseReset();
         if (wasSuccess) events.RaiseResetAfterSuccess();
         else events.RaiseResetAfterFail();

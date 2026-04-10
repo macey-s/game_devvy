@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-[CreateAssetMenu(menuName = "Game/Game Events")]
+[CreateAssetMenu(menuName = "game events")]
 public class gameEvents : ScriptableObject
 {
     public event Action OnRoundStart;
