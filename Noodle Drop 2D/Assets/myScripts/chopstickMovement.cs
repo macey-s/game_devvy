@@ -2,15 +2,15 @@ using UnityEngine;
 
 public class chopstickMovement : MonoBehaviour
 {
-    [Header("Movement Settings")]
+    [Header("movement settings")]
     public float moveRange = 3f;
     public float speed = 2f;
 
-    [Header("References")]
+    [Header("references")]
     public Transform leftStick;
     public Transform rightStick;
 
-    [Header("Gap Settings")]
+    [Header("gap settings")]
     public float gapSize = 11f;
 
     private Vector3 startPos;
@@ -19,7 +19,7 @@ public class chopstickMovement : MonoBehaviour
     void Start()
     {
         startPos = transform.position;
-        UpdateGap(); // initial setup
+        UpdateGap(); 
     }
 
     void Update()
@@ -32,29 +32,28 @@ public class chopstickMovement : MonoBehaviour
                                          startPos.z);
     }
 
-    // Call this to pause movement
+    // to pause //
     public void StopMovement()
     {
         isMoving = false;
     }
 
-    // Call this to resume movement
+    // to resume //
     public void ResumeMovement()
     {
         isMoving = true;
     }
 
-    // Full reset: updates gap width AND jumps parent to start position (used on fail)
+    // full reset on fail //
     public void UpdateGap()
     {
         leftStick.localPosition = new Vector3(-gapSize / 2f, 0, 0);
         rightStick.localPosition = new Vector3(gapSize / 2f, 0, 0);
 
-        // Jump parent to start position for fail reset
         transform.position = startPos;
     }
 
-    // Only update gap width without moving the sticks (used on success)
+    // update gap on success //
     public void UpdateGapSizeOnly()
     {
         leftStick.localPosition = new Vector3(-gapSize / 2f, 0, 0);
