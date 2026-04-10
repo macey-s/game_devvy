@@ -12,11 +12,8 @@ public class startUI : MonoBehaviour
     {
         if (events == null) return;
 
-        // Hide when the player starts playing
+        // hide menu when playing //
         events.OnTap += Hide;
-
-        // Show ONLY after a fail reset (not after success)
-        events.OnResetAfterFail += Show;
     }
 
     void OnDisable()
@@ -29,7 +26,6 @@ public class startUI : MonoBehaviour
 
     void Start()
     {
-        // Show at app start / first load
         Show();
     }
 
