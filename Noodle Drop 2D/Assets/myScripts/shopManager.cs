@@ -76,4 +76,46 @@ public class shopManager : MonoBehaviour
     {
         return PlayerPrefs.GetString("Equipped_" + category, "default");
     }
+
+    public string selectedItemID;
+    public string selectedCategory;
+    public GameObject currentSelectedObject;
+
+    public void SelectItem(string itemID, string category)
+    {
+        selectedItemID = itemID;
+        selectedCategory = category;
+
+        Debug.Log("Selected: " + itemID);
+    }
+
+    public void SetSelectedObject(GameObject obj)
+    {
+        // remove highlight //
+        if (currentSelectedObject != null)
+        {
+            currentSelectedObject.transform.localScale = Vector3.one;
+        }
+
+        currentSelectedObject = obj;
+
+        // highlight //
+        currentSelectedObject.transform.localScale = Vector3.one * 1.1f;
+    }
+
+    public void BuySelectedItem()
+    {
+        if (!string.IsNullOrEmpty(selectedItemID))
+        {
+            BuyItem(selectedItemID);
+        }
+    }
+
+    public void EquipSelectedItem()
+    {
+        if (!string.IsNullOrEmpty(selectedItemID))
+        {
+            EquipItem(selectedCategory, selectedItemID);
+        }
+    }
 }

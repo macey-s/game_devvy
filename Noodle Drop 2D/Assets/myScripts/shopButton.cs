@@ -6,13 +6,10 @@ public class shopButton : MonoBehaviour
     public string category;
     public shopManager shopManager;
 
-    public void OnBuyClicked()
+    void OnMouseDown()
     {
-        shopManager.BuyItem(itemID);
-    }
+        shopManager.SelectItem(itemID, category);
 
-    public void OnEquipClicked()
-    {
-        shopManager.EquipItem(category, itemID);
+        shopManager.SetSelectedObject(gameObject);
     }
 }
