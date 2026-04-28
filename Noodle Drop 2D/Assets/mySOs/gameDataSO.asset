@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::gameDataSO
   startGapSize: 12
   startSpeed: 2.3
-  gapDecrease: 0.1
-  speedIncrease: 0.2
+  gapDecrease: 0.3
+  speedIncrease: 0.4
   maxSpeed: 15
   minGapSize: 0.5
   gapShrinkStreak: 3

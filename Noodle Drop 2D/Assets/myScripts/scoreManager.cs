@@ -53,7 +53,7 @@ public class scoreManager : MonoBehaviour
             if (highScore > 0)
             {
                 highScoreText.gameObject.SetActive(true);
-                highScoreText.text = " " + highScore;
+                highScoreText.text = "" + highScore;
             }
             else
             {
@@ -126,7 +126,7 @@ public class scoreManager : MonoBehaviour
         if (scoreText == null) return;
 
         if (hasStartedScoring)
-            scoreText.text = " " + score;
+            scoreText.text = "" + score;
         else
             scoreText.text = "";
     }
@@ -136,7 +136,7 @@ public class scoreManager : MonoBehaviour
         if (highScoreText == null) return;
 
         highScoreText.gameObject.SetActive(true);
-        highScoreText.text = " " + highScore;
+        highScoreText.text = "" + highScore;
     }
 
     private void UpdateCoinUI()
